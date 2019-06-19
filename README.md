@@ -1,2 +1,2 @@
-# gpxVis
+# GPXVis
 visualized gpx files
