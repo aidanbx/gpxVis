@@ -1,5 +1,6 @@
 public class Node implements Comparable<Node> {
     public final double lat, lon, ele, time, pow, hr, cad, temp;
+    public final Point pos;
 
     public Node(double lat, double lon, double ele, double time, double pow, double hr, double cad, double temp) {
         this.lat = lat;
@@ -10,6 +11,7 @@ public class Node implements Comparable<Node> {
         this.time = time;
         this.temp = temp;
         this.pow = pow;
+        this.pos = new Point(lat, lon);
     }
 
     public Node() {
@@ -21,9 +23,11 @@ public class Node implements Comparable<Node> {
         this.time = 0;
         this.temp = 0;
         this.pow = 0;
+        this.pos = new Point(0, 0);
     }
 
     public Node(double lat, double lon, double ele) {
+        this.pos = new Point(lat, lon);
         this.lat = lat;
         this.lon = lon;
         this.ele = ele;
@@ -42,6 +46,7 @@ public class Node implements Comparable<Node> {
         this.time = a[3];
         this.temp = a[7];
         this.pow = a[4];
+        this.pos = new Point(a[0], a[1]);
     }
 
     @Override

@@ -5,7 +5,8 @@ import java.util.Scanner;
 
 public class Route {
     private ArrayList<Node> route;
-    private double maxLat = 0, maxLon = 0, minLat = 0, minLon = 0;
+    private double maxLat = -90, maxLon = -180, minLat = 90, minLon = 180;
+    private double maxHr = 0, maxCad = 0, maxEle = -10000000;
 
     public Route(String fileName) {
         route = parseGPX(fileName);
@@ -34,18 +35,33 @@ public class Route {
                         i[0] = 11;
                         nodeAttr[0] = Double.parseDouble(getUntil(line, "\"", i));
                         if (nodeAttr[0] > maxLat) {
-
+                            maxLat = nodeAttr[0];
+                        }
+                        if (nodeAttr[0] < minLat) {
+                            minLat = nodeAttr[0];
                         }
                         i[0] += 6;
                         nodeAttr[1] = Double.parseDouble(getUntil(line, "\"", i));
+                        if (nodeAttr[1] > maxLon) {
+                            maxLon = nodeAttr[1];
+                        }
+                        if (nodeAttr[1] < minLon) {
+                            minLon = nodeAttr[1];
+                        }
                         break;
                     case ("ele"):
                         i[0] = 5;
                         nodeAttr[2] = Double.parseDouble(getUntil(line, "</", i));
+                        if (nodeAttr[2] > maxEle) {
+                            maxEle = nodeAttr[2];
+                        }
                         break;
                     case ("hr"):
                         i[0] = 11;
                         nodeAttr[5] = Double.parseDouble(getUntil(line, "</", i));
+                        if (nodeAttr[5] > maxHr) {
+                            maxHr = nodeAttr[5];
+                        }
                         break;
                     case ("cad"):
                         i[0] = 12;
@@ -90,4 +106,55 @@ public class Route {
         return out;
     }
 
+    public ArrayList<Node> getRoute() {
+        return route;
+    }
+
+    public double getMaxLat() {
+        return maxLat;
+    }
+
+    public double getMaxLon() {
+        return maxLon;
+    }
+
+    public double getMinLat() {
+        return minLat;
+    }
+
+    public double getMinLon() {
+        return minLon;
+    }
+
+    public double getLonRange() {
+        return Math.abs(maxLon - minLon);
+    }
+
+    public double getLatRange() {
+        return Math.abs(maxLat - minLat);
+    }
+
+    public double getMaxHr() {
+        return maxHr;
+    }
+
+    public double getMaxCad() {
+        return maxCad;
+    }
+
+    public double getAspectRatio() {
+        return getLonRange() / getLatRange();
+    }
+
+    public double getLonScale() {
+        return getAspectRatio() < 1 ? 1 / getAspectRatio() : 1;
+    }
+
+    public double getLatScale() {
+        return getAspectRatio() > 1 ? 1 / getAspectRatio() : 1;
+    }
+
+    public double getMaxEle() {
+        return maxEle;
+    }
 }

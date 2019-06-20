@@ -30,13 +30,14 @@ public class Viewport {
         mother = m;
     }
 
-    public Viewport devineBirth(Point start, Point end){
-        Viewport ret = new Viewport(start.xDist(end),start.yDist(end),start.center(end),parent);
+    public Viewport devineBirth(Point start, Point end) {
+        Viewport ret = new Viewport(start.xDist(end), start.yDist(end), start.center(end), parent);
         ret.setMother(this);
         return ret;
     }
-    public Viewport birth(Point start, Point end){
-        return devineBirth(putIn(start),putIn(end));
+
+    public Viewport birth(Point start, Point end) {
+        return devineBirth(putIn(start), putIn(end));
     }
 
     public Point putIn(Point p) {
@@ -45,8 +46,8 @@ public class Viewport {
     }
 
     public Point takeOut(Point p) {
-        return new Point(mother.leftBound()+mother.width*((p.x - leftBound())/width),
-                mother.upperBound()+mother.height*((p.y - upperBound())/height));
+        return new Point(mother.leftBound() + mother.width * ((p.x - leftBound()) / width),
+                mother.upperBound() + mother.height * ((p.y - upperBound()) / height));
     }
 
     public void drawBounds(int c) {
@@ -62,7 +63,11 @@ public class Viewport {
         width = Math.abs(w);
         height = Math.abs(h);
     }
-    public void scale(double s){width/=s;height/=s;}
+
+    public void scale(double s) {
+        width /= s;
+        height /= s;
+    }
 
     public void moveTo(Point p) {
         center = p;
@@ -96,11 +101,13 @@ public class Viewport {
         return center;
     }
 
-    public Point topLeft(){return new Point(leftBound(),upperBound());}
+    public Point topLeft() {
+        return new Point(leftBound(), upperBound());
+    }
 
     @Override
     public String toString() {
-        return  "w: "+width +
+        return "w: " + width +
                 "\nh: " + height +
                 "\n" + center;
     }
