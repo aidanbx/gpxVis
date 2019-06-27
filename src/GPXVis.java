@@ -1,6 +1,7 @@
 import peasycam.src.peasy.PeasyCam;
 import processing.core.PApplet;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -13,6 +14,8 @@ public class GPXVis extends PApplet {
     private double panX = 0, panY = 0, panZ = 0, x = 0, y = 0, z = 0;
     private static String filename;
     private double maxSpeed = -1;
+    private List<Clickable> clickables = new ArrayList<>();
+    private Point mousePos;
 
     public static void main(String[] args) {
         PApplet.main("GPXVis", args);
@@ -31,6 +34,7 @@ public class GPXVis extends PApplet {
 
     private int i = 0;
     private boolean leftDrag = false;
+
 
     @Override
     public void setup() {
@@ -54,16 +58,19 @@ public class GPXVis extends PApplet {
         //println(nodeSpeed(path.get(path.size()/2)));
         //println(distBetweenNodes(path.get(0),path.get(path.size()/2)));
         //println(gpsToKm(34.429569,-119.732987,34.492485,-119.669098));
+        initClicks();
     }
 
+    @Override
     public void draw() {
+        mousePos = new Point(mouseX, mouseY);
         directionalLight(255, 255, 255, 0, -1, -1);
         lights();
 
         background(120, 160, 225);
 
         pushMatrix();
-        i = i >= path.size() - 36 ? 0 : i + 36;
+        i = i >= path.size() - 3 ? 0 : i + 3;
         Node fly = path.get(i);
         cam.setLeftDragHandler((dx, dy) -> {
             leftDrag = true;
@@ -110,29 +117,64 @@ public class GPXVis extends PApplet {
         sphereZ(width, 0, -height, 20);
         sphereZ(width, height, -height, 20);
         sphereZ(0, height, -height, 20);*/
-
+        cam.beginHUD();
+        drawSliders();
+        updateObjects();
+        cam.endHUD();
     }
 
-    public double gpsToKm(double lat1, double lon1, double lat2, double lon2) {
-        double R = 6371, dLat = Math.abs(radians((float) (lat2 - lat1)));
-        double dLon = Math.abs(radians((float) (lon2 - lon1)));
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(radians((float) lat1)) * Math.cos(radians((float) lat2)) *
-                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
+    @Override
+    public void mousePressed() {
+        for (Clickable c : clickables) {
+            if (c instanceof Slider) {
+                if (c.toggleActive(mousePos)) {
+                    cam.setActive(false);
+                }
+            }
+        }
     }
 
-    public double distBetweenNodes(Node n1, Node n2) {
-        return 0.621371 * gpsToKm(n1.lat, n1.lon, n2.lat, n2.lon);
+    @Override
+    public void mouseReleased() {
+        for (Clickable c : clickables) {
+
+            if (c instanceof Slider) {
+                c.deActivate();
+                cam.setActive(true);
+            } else {
+                c.toggleActive(mousePos);
+            }
+        }
     }
 
-    public double nodeSpeed(Node n1, List<Node> path) {
-        int i = path.indexOf(n1) != -1 ? path.indexOf(n1) : 0;
-        Node n2 = i > 0 ? path.get(i - 1) : path.get(i + 1);
-        double dt = Math.abs(n1.time - n2.time);
-        double dz = distBetweenNodes(n1, n2);
-        return (dz / dt) * 3600;
+    public void initClicks() {
+        Clickable testSlider = new Slider(this, new Point(width / 2, height - 50), true, 100, width - 100);
+        ((Slider) testSlider).setSize(50, 20);
+        clickables.add(testSlider);
+    }
+
+    public void drawSliders() {
+        for (Clickable c : clickables) {
+            if (c instanceof Slider) {
+
+
+                stroke(0);
+                strokeWeight(10);
+                //((Slider)c).drawLine();
+                ((Slider) c).drawLimits();
+
+                fill(255, 0, 0);
+                noStroke();
+                ((Slider) c).drawRect();
+                //((Slider)c).drawEllipse();
+            }
+        }
+    }
+
+    public void updateObjects() {
+        for (Clickable c : clickables) {
+            c.updateValue(mousePos);
+        }
     }
 
     public List<Node> parseRoute(String fileName) {
@@ -161,6 +203,28 @@ public class GPXVis extends PApplet {
                 .collect(Collectors.toList());
         return transRoute;
 
+    }
+
+    public double gpsToKm(double lat1, double lon1, double lat2, double lon2) {
+        double R = 6371, dLat = Math.abs(radians((float) (lat2 - lat1)));
+        double dLon = Math.abs(radians((float) (lon2 - lon1)));
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(radians((float) lat1)) * Math.cos(radians((float) lat2)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    public double distBetweenNodes(Node n1, Node n2) {
+        return 0.621371 * gpsToKm(n1.lat, n1.lon, n2.lat, n2.lon);
+    }
+
+    public double nodeSpeed(Node n1, List<Node> path) {
+        int i = path.indexOf(n1) != -1 ? path.indexOf(n1) : 0;
+        Node n2 = i > 0 ? path.get(i - 1) : path.get(i + 1);
+        double dt = Math.abs(n1.time - n2.time);
+        double dz = distBetweenNodes(n1, n2);
+        return (dz / dt) * 3600;
     }
 
     public void drawGrid() {
