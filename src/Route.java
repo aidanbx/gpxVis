@@ -6,7 +6,7 @@ import java.util.Scanner;
 public class Route {
     private ArrayList<Node> route;
     private double maxLat = -90, maxLon = -180, minLat = 90, minLon = 180;
-    private double maxHr = 0, maxCad = 0, maxEle = -10000000;
+    private double minHr = 300, maxHr = 0, maxCad = 0, maxEle = -10000000, maxSpeed = -1;
 
     public Route(String fileName) {
         route = parseGPX(fileName);
@@ -17,7 +17,7 @@ public class Route {
         boolean inNode = false;
         try {
             Scanner input = new Scanner(new File(System.getProperty("user.dir") + "\\GPX\\" + file));
-            Double[] nodeAttr = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+            Double[] nodeAttr = {0.0, 0.0, 0.0, 0.0, 320.0, 150.0, 80.0, 20.0};
 
             while (input.hasNextLine()) {
                 int[] i = {1};
@@ -62,10 +62,16 @@ public class Route {
                         if (nodeAttr[5] > maxHr) {
                             maxHr = nodeAttr[5];
                         }
+                        if (nodeAttr[5] < minHr) {
+                            minHr = nodeAttr[5];
+                        }
                         break;
                     case ("cad"):
                         i[0] = 12;
                         nodeAttr[6] = Double.parseDouble(getUntil(line, "</", i));
+                        if (nodeAttr[6] > maxCad) {
+                            maxCad = nodeAttr[6];
+                        }
                         break;
                     case ("atemp"):
                         i[0] = 14;
@@ -156,5 +162,17 @@ public class Route {
 
     public double getMaxEle() {
         return maxEle;
+    }
+
+    public double getMaxSpeed() {
+        return maxSpeed;
+    }
+
+    public void setMaxSpeed(double maxSpeed) {
+        this.maxSpeed = maxSpeed;
+    }
+
+    public double getMinHr() {
+        return minHr;
     }
 }
