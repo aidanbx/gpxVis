@@ -2,6 +2,7 @@ public abstract class Clickable {
     protected double w = 10, h = 10;
     protected Point pos = new Point(0, 0);
     protected boolean active = false;
+    protected double val=0;
     //protected double value=0, minV,maxV;
 
     public boolean withinBounds(Point inPos) {
@@ -12,6 +13,10 @@ public abstract class Clickable {
     public boolean toggleActive(Point inPos) {
         active = withinBounds(inPos) ? !active : active;
         return active;
+    }
+
+    public double getValue(){
+        return val;
     }
 
     public void deActivate() {

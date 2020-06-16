@@ -3,7 +3,7 @@ import processing.core.PApplet;
 public class Slider extends Clickable {
     private PApplet parent;
     private boolean horizontal = true;
-    private double minPos, maxPos, minVal, maxVal, val;
+    private double minPos, maxPos, minVal, maxVal;
 
     public Slider(PApplet parent, Point pos, double w, double h, boolean horizontal, double minPos, double maxPos, double minVal, double maxVal, double val) {
         this.parent = parent;
