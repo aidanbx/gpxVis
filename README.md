@@ -11,3 +11,4 @@ Add example outputs
 ## Usage
 Run as Javac file, input heart rate zones (to be changed).
 Uses processing, PeasyCam, and OpenGL
+

@@ -1,10 +1,12 @@
-import peasycam.src.peasy.PeasyCam;
-import processing.core.PApplet;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import peasy.PeasyCam;
+import processing.core.PApplet;
 
 
 public class GPXVis extends PApplet {
@@ -14,21 +16,63 @@ public class GPXVis extends PApplet {
     private double panX = 0, panY = 0, panZ = 0, x = 0, y = 0, z = 0;
     private static String filename;
     private double maxSpeed = -1;
+    private static HashMap<Integer, Integer> zoneColors = new HashMap<>();
+    private static int[] HRZones = new int[6];
     private List<Clickable> clickables = new ArrayList<>();
     private Point mousePos;
+    private Clickable posSlider;
 
     public static void main(String[] args) {
+        Scanner maxHR  = new Scanner(System.in);
+        System.out.println("Enter Max HR: ");
+        HRZones[5] = maxHR.nextInt();
+        HRZones[4] = (int)(HRZones[5]*0.95);
+        HRZones[3] = (int)(HRZones[5]*0.85);
+        HRZones[2] = (int)(HRZones[5]*0.8);
+        HRZones[1] = (int)(HRZones[5]*0.75);
+        HRZones[0] = (int)(HRZones[5]*0.7);
+
         PApplet.main("GPXVis", args);
         println(args.length);
-        filename = args.length == 1 ? args[0] : "Evening_Ride.gpx";
-//        if(filename.substring(filename.length()-4).equals(".gpx")){
-//            println(System.getProperty("user.dir"));
-//        }
+        filename = args.length == 1 ? args[0] : "Rattlesnake_.gpx";
+        if(filename.substring(filename.length()-4).equals(".gpx")){
+           println(System.getProperty("user.dir"));
+        }
     }
 
     @Override
     public void settings() {
-        fullScreen(P3D);
+        size(960,540,P3D);
+        for(int i=0; i<6; i++){
+            println("HR Zone " + i + ": " + (i==0 ? 0 : HRZones[i-1]) + " to " + HRZones[i]);
+            for(int j= i==0 ? 0 : HRZones[i-1]; j<HRZones[i];j++){
+                switch (i) {
+                    case 0:
+                        zoneColors.put(j, color(0,255,0));
+                        break;
+                    case 1:
+                        zoneColors.put(j, color(155,255,0));
+                        break;
+                    case 2:
+                        zoneColors.put(j, color(255,255,0));
+                        break;
+                    case 3:
+                        zoneColors.put(j, color(255,155,0));
+                        break;
+                    case 4:
+                        zoneColors.put(j, color(255,0,0));
+                        break;
+                    case 5:
+                        zoneColors.put(j, color(155,0,0));
+                        break;
+                    default:
+                        break;
+                }
+                // zoneColors.put(j, color(j* (float)(i/5),0,0,50));
+                // zoneColors.put(j, color((int)(i*(255.0/5)),0,0,50));
+                // System.out.println((int)(i*(255.0/5)));
+            }
+        }
         // size(3840, 2160, P3D);
     }
 
@@ -38,6 +82,7 @@ public class GPXVis extends PApplet {
 
     @Override
     public void setup() {
+        frameRate(30);
         path = parseRoute(filename);
         path = path.stream().map(n -> {
                     Node tmp = new Node(n);
@@ -49,12 +94,13 @@ public class GPXVis extends PApplet {
         path.stream().forEach(n -> maxSpeed = n.speed > maxSpeed ? n.speed : maxSpeed);
         println(maxSpeed);
         cam = new PeasyCam(this, width / 2, height / 2, -height / 2, height * 3);
-        cam.setMinimumDistance(-1000);
+        cam.setMinimumDistance(0);
         cam.setMaximumDistance(100000);
         cam.setRotations(PI / 6, 0, 0);
         stroke(255);
         strokeWeight(50);
         println(route.getMaxSpeed());
+
         //println(nodeSpeed(path.get(path.size()/2)));
         //println(distBetweenNodes(path.get(0),path.get(path.size()/2)));
         //println(gpsToKm(34.429569,-119.732987,34.492485,-119.669098));
@@ -70,7 +116,8 @@ public class GPXVis extends PApplet {
         background(120, 160, 225);
 
         pushMatrix();
-        i = i >= path.size() - 3 ? 0 : i + 3;
+        i = (int)posSlider.getValue();
+        //i = i >= path.size() - 3 ? 0 : i + 3;
         Node fly = path.get(i);
         cam.setLeftDragHandler((dx, dy) -> {
             leftDrag = true;
@@ -148,9 +195,10 @@ public class GPXVis extends PApplet {
     }
 
     public void initClicks() {
-        Clickable testSlider = new Slider(this, new Point(width / 2, height - 50), true, 100, width - 100);
-        ((Slider) testSlider).setSize(50, 20);
-        clickables.add(testSlider);
+        posSlider = new Slider(this, new Point(width / 2, height - 50), true, 100, width - 100);
+        ((Slider) posSlider).setSize(50, 20);
+        ((Slider) posSlider).setRange(0,path.size()-1);
+        clickables.add(posSlider);
     }
 
     public void drawSliders() {
@@ -177,6 +225,10 @@ public class GPXVis extends PApplet {
         }
     }
 
+    public void drawFlag(Node n){
+
+    }
+
     public List<Node> parseRoute(String fileName) {
         route = new Route(fileName);
         //System.out.println(route.getMinLat() + " to " + route.getMaxLat() + " and " + route.getMinLon() + " to " + route.getMaxLon());
@@ -197,7 +249,8 @@ public class GPXVis extends PApplet {
 
         List<Node> transRoute = route.getRoute().stream().map(transN)
                 .map(n -> {
-                    n.color = color((float) ((n.hr - route.getMinHr()) / (route.getMaxHr() - route.getMinHr())) * 255, 50, 50);
+                    // n.color = color((float) ((n.hr - route.getMinHr()) / (route.getMaxHr() - route.getMinHr())) * 255, 50, 50);
+                    n.color = zoneColors.get((int)n.hr);
                     return n;
                 })
                 .collect(Collectors.toList());
