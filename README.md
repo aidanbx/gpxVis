@@ -11,7 +11,7 @@ Built using the processing API, peasyCam, and OpenGL all in Java
 
 ## Set Up
 Include all jars in /library/ to ClassPath
-Compile with javac GpxVis.java, run with java GpxVis
+Compile with javac ./src/GPXVis.java, run with java ./src/GPXVis (for now)
 
 Uses processing, PeasyCam, and OpenGL
 
