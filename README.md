@@ -1,6 +1,8 @@
 # GPXVis
 Visualizes GPX files in a 3D map, primarily for cycling, support for heart rate, cadence, and power.
 
+Mainly an exercise in parsing XML like data and creating a controllable camera in a 3d environment
+
 Built using the processing API, peasyCam, and OpenGL all in Java
 
 ![alt text](https://github.com/abarbieu/gpxVis/blob/master/gpxvisdemo.gif "shader issues, flight control")
